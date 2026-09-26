@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SignalDash — AI Data Copilot</title>
+<meta name="description" content="SignalDash transforme vos données en décisions simples.">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#070b12;color:#eef3f8;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
+button,input,select,textarea{font:inherit}
+.app{min-height:100vh;display:flex}
+.side{width:250px;background:#0b1019;border-right:1px solid #1d2735;padding:22px 16px;position:fixed;inset:0 auto 0 0}
+.brand{font-weight:900;font-size:21px;padding:5px 10px 25px}
+.brand span{color:#70d7ff}
+.nav button{display:block;width:100%;text-align:left;background:transparent;border:0;color:#9ba8ba;padding:12px;border-radius:9px;cursor:pointer;margin:3px 0}
+.nav button.active,.nav button:hover{background:#141c29;color:#fff}
+.main{margin-left:250px;width:calc(100% - 250px);padding:28px;max-width:1400px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:28px}
+.title h1{margin:0;font-size:31px}
+.muted{color:#91a0b4}
+.btn{border:1px solid #263246;background:#121a28;color:#fff;border-radius:9px;padding:10px 14px;cursor:pointer}
+.primary{border:0;background:linear-gradient(100deg,#6ee7f9,#a78bfa);color:#071019;font-weight:800}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}
+.card{background:#0d141f;border:1px solid #1e2a3b;border-radius:14px;padding:20px}
+.metric{font-size:28px;font-weight:850;margin:8px 0}
+.label{font-size:13px;color:#91a0b4}
+.section{margin-top:20px}
+.section h2{font-size:20px}
+.chart{height:180px;display:flex;align-items:end;gap:7px;padding:20px 5px 5px}
+.bar{flex:1;background:linear-gradient(180deg,#70d7ff,#7c6cf4);border-radius:5px 5px 2px 2px;min-height:8px}
+.two{display:grid;grid-template-columns:1.3fr .7fr;gap:15px}
+.list{margin:0;padding:0;list-style:none}
+.list li{padding:13px 0;border-bottom:1px solid #1c2634}
+.pill{font-size:11px;border:1px solid #304057;border-radius:999px;padding:4px 7px;color:#79d9ff}
+.view{display:none}
+.view.active{display:block}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.field label{display:block;font-size:13px;color:#9ba8ba;margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;background:#0a1019;border:1px solid #263246;color:#fff;border-radius:8px;padding:11px}
+.field textarea{min-height:100px}
+.full{grid-column:1/-1}
+.toast{position:fixed;right:22px;bottom:22px;background:#121b29;border:1px solid #33435a;padding:13px 16px;border-radius:10px;display:none}
+@media(max-width:850px){
+.side{display:none}
+.main{margin:0;width:100%;padding:18px}
+.grid{grid-template-columns:1fr 1fr}
+.two{grid-template-columns:1fr}
+.formgrid{grid-template-columns:1fr}
+}
+@media(max-width:520px){
+.grid{grid-template-columns:1fr}
+.top{align-items:flex-start}
+.title h1{font-size:25px}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+<aside class="side">
+<div class="brand">Signal<span>Dash</span></div>
+
+<nav class="nav">
+<button class="active" data-view="dashboard">▦ Tableau de bord</button>
+<button data-view="analysis">✦ Nouvelle analyse</button>
+<button data-view="reports">▤ Rapports</button>
+<button data-view="settings">⚙ Paramètres</button>
+</nav>
+
+<div style="position:absolute;bottom:20px;left:20px;right:20px;font-size:12px;color:#718096">
+MVP local · données de démonstration
+</div>
+</aside>
+
+<main class="main">
+
+<div class="top">
+<div class="title">
+<div class="muted">Bonjour 👋</div>
+<h1 id="pageTitle">Tableau de bord</h1>
+</div>
+<button class="btn primary" id="newBtn">+ Nouvelle analyse</button>
+</div>
+
+<section id="dashboard" class="view active">
+
+<div class="grid">
+
+<div class="card">
+<div class="label">Signaux détectés</div>
+<div class="metric" id="mSignals">24</div>
+<span class="pill">+18% ce mois</span>
+</div>
+
+<div class="card">
+<div class="label">Rapports</div>
+<div class="metric" id="mReports">6</div>
+<span class="pill">3 en attente</span>
+</div>
+
+<div class="card">
+<div class="label">KPI suivis</div>
+<div class="metric">12</div>
+<span class="pill">stable</span>
+</div>
+
+<div class="card">
+<div class="label">Qualité des données</div>
+<div class="metric">94%</div>
+<span class="pill">bonne</span>
+</div>
+
+</div>
+
+<div class="two section">
+
+<div class="card">
+<h2>Activité des signaux</h2>
+<div class="chart" id="chart"></div>
+<div class="muted" style="font-size:12px">
+7 dernières périodes — données de démonstration
+</div>
+</div>
+
+<div class="card">
+<h2>Actions prioritaires</h2>
+
+<ul class="list">
+
+<li>
+<b>Tester l'offre déjeuner</b><br>
+<span class="muted">Mesurer les réservations sur 7 jours.</span>
+</li>
+
+<li>
+<b>Comparer 2 messages</b><br>
+<span class="muted">Conserver celui qui génère le plus de demandes.</span>
+</li>
+
+<li>
+<b>Surveiller le créneau faible</b><br>
+<span class="muted">Créer une offre dédiée avant de modifier les prix.</span>
+</li>
+
+</ul>
+</div>
+
+</div>
+</section>
+
+<section id="analysis" class="view">
+
+<div class="card">
+
+<h2>Nouvelle analyse</h2>
+
+<p class="muted">
+Décris ton activité et colle quelques données. SignalDash génère un brief structuré à partir des informations fournies.
+</p>
+
+<div class="formgrid">
+
+<div class="field">
+<label>Entreprise</label>
+<input id="company" placeholder="Ex. Café Lumière">
+</div>
+
+<div class="field">
+<label>Secteur</label>
+<select id="sector">
+<option>Restauration</option>
+<option>Hôtellerie</option>
+<option>Immobilier</option>
+<option>Commerce</option>
+<option>Services</option>
+</select>
+</div>
+
+<div class="field">
+<label>Objectif</label>
+<input id="goal" placeholder="Ex. augmenter les réservations">
+</div>
+
+<div class="field">
+<label>Période</label>
+<select id="period">
+<option>7 jours</option>
+<option>30 jours</option>
+<option>90 jours</option>
+</select>
+</div>
+
+<div class="field full">
+<label>Données / observations</label>
+<textarea id="data" placeholder="Ex. lundi 40 ventes, mardi 55, mercredi 31..."></textarea>
+</div>
+
+<div class="full">
+<button class="btn primary" id="generate">Générer le brief</button>
+</div>
+
+</div>
+</div>
+
+<div id="result" class="card section" style="display:none"></div>
+
+</section>
+
+<section id="reports" class="view">
+
+<div class="card">
+<h2>Rapports enregistrés</h2>
+<div id="reportsList"></div>
+</div>
+
+</section>
+
+<section id="settings" class="view">
+
+<div class="card">
+
+<h2>Paramètres</h2>
+
+<p class="muted">
+MVP autonome : les données sont conservées dans le navigateur de cet appareil.
+</p>
+
+<div class="field" style="max-width:500px">
+<label>Nom de l'espace</label>
+<input id="workspace" value="Mon entreprise">
+</div>
+
+<br>
+
+<button class="btn" id="saveSettings">Enregistrer</button>
+
+</div>
+
+</section>
+
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+const $=s=>document.querySelector(s);
+
+const $$=s=>document.querySelectorAll(s);
+
+let reports=JSON.parse(localStorage.getItem('sd_reports')||'[]');
+
+function toast(t){
+let x=$('#toast');
+x.textContent=t;
+x.style.display='block';
+setTimeout(()=>x.style.display='none',2200);
+}
+
+function show(v){
+
+$$('.view').forEach(x=>x.classList.remove('active'));
+
+$('#'+v).classList.add('active');
+
+$$('.nav button').forEach(x=>
+x.classList.toggle('active',x.dataset.view===v)
+);
+
+$('#pageTitle').textContent={
+dashboard:'Tableau de bord',
+analysis:'Nouvelle analyse',
+reports:'Rapports',
+settings:'Paramètres'
+}[v];
+
+}
+
+$$('.nav button').forEach(b=>
+b.onclick=()=>show(b.dataset.view)
+);
+
+$('#newBtn').onclick=()=>show('analysis');
+
+let vals=[42,61,48,74,58,86,69];
+
+$('#chart').innerHTML=vals.map(v=>
+`<div class="bar" style="height:${v}%"></div>`
+).join('');
+
+function renderReports(){
+
+let el=$('#reportsList');
+
+if(!reports.length){
+
+el.innerHTML=
+'<p class="muted">Aucun rapport personnalisé pour le moment.</p>';
+
+return;
+}
+
+el.innerHTML=reports.map((r,i)=>
+`
+<div style="padding:15px 0;border-bottom:1px solid #1c2634">
+<b>${r.company}</b> · ${r.sector}<br>
+<span class="muted">${r.goal} · ${r.date}</span><br>
+<button class="btn" style="margin-top:8px" onclick="openReport(${i})">
+Ouvrir
+</button>
+</div>
+`
+).join('');
+
+}
+
+function makeBrief(company,sector,goal,data,period){
+
+let words=(data||'').trim().split(/\s+/).filter(Boolean).length;
+
+let confidence=Math.min(96,72+Math.min(20,words));
+
+return `
+<span class="pill">BRIEF GÉNÉRÉ</span>
+
+<h2>${company||'Votre entreprise'} — ${sector}</h2>
+
+<p class="muted">
+Objectif : ${goal||'améliorer la performance'} · période : ${period}
+</p>
+
+<div class="two">
+
+<div>
+
+<h3>1. Signaux à examiner</h3>
+
+<ul>
+
+<li>
+Comparer les périodes fortes et faibles à partir des données fournies.
+</li>
+
+<li>
+Identifier les variations répétées plutôt qu'un événement isolé.
+</li>
+
+<li>
+Tester une action mesurable avant de modifier plusieurs variables à la fois.
+</li>
+
+</ul>
+
+<h3>2. Actions prioritaires</h3>
+
+<ol>
+
+<li>
+Choisir un indicateur principal lié à l'objectif.
+</li>
+
+<li>
+Lancer un test sur ${period}.
+</li>
+
+<li>
+Comparer le résultat au niveau de départ.
+</li>
+
+</ol>
+
+</div>
+
+<div>
+
+<h3>Qualité du brief</h3>
+
+<div class="metric">${confidence}%</div>
+
+<p class="muted">
+${
+words<10
+?
+'Ajoute davantage de données chiffrées pour augmenter la précision.'
+:
+'Informations suffisantes pour structurer un premier brief.'
+}
+</p>
+
+<h3>Prochaine mesure</h3>
+
+<p class="muted">
+Définir une métrique avant le test et conserver une trace du résultat.
+</p>
+
+</div>
+
+</div>
+
+<p class="muted" style="font-size:12px">
+Ce brief est une synthèse basée sur les informations saisies.
+Il ne constitue pas un conseil financier et ne garantit aucun résultat.
+</p>
+`;
+
+}
+
+$('#generate').onclick=()=>{
+
+let company=$('#company').value.trim();
+
+let sector=$('#sector').value;
+
+let goal=$('#goal').value.trim();
+
+let period=$('#period').value;
+
+let data=$('#data').value;
+
+let r={
+company:company||'Entreprise sans nom',
+sector,
+goal:goal||'Objectif non précisé',
+period,
+data,
+date:new Date().toLocaleDateString('fr-FR')
+};
+
+reports.unshift(r);
+
+localStorage.setItem(
+'sd_reports',
+JSON.stringify(reports)
+);
+
+$('#result').innerHTML=
+makeBrief(
+r.company,
+r.sector,
+r.goal,
+r.data,
+r.period
+);
+
+$('#result').style.display='block';
+
+$('#mReports').textContent=reports.length;
+
+$('#mSignals').textContent=24+reports.length*3;
+
+renderReports();
+
+toast('Brief généré et enregistré');
+
+};
+
+window.openReport=i=>{
+
+let r=reports[i];
+
+show('analysis');
+
+$('#result').innerHTML=
+makeBrief(
+r.company,
+r.sector,
+r.goal,
+r.data,
+r.period
+);
+
+$('#result').style.display='block';
+
+};
+
+$('#saveSettings').onclick=()=>{
+
+localStorage.setItem(
+'sd_workspace',
+$('#workspace').value
+);
+
+toast('Paramètres enregistrés');
+
+};
+
+$('#workspace').value=
+localStorage.getItem('sd_workspace')||
+'Mon entreprise';
+
+renderReports();
+
+</script>
+
+</body>
+</html>
